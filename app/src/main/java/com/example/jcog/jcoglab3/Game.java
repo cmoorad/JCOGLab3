@@ -66,8 +66,6 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-
-
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
@@ -95,63 +93,129 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
     }
 
+    //Updates map zoom based on current location
     @Override
     public void onLocationChanged(Location location) {
 
         Log.d("LOCATION", "CHANGED: " + location.getLatitude() + " " + location.getLongitude());
-        Toast.makeText(this, "LOC: " + location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_LONG).show();
 
         LatLng newPoint = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(17f));
-
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(16f));
 
     }
 
 
+    //SETS UP THE MAP INITIALLY, WITH APPROPRIATE ZOOM
     @Override
     public void onMapReady(GoogleMap googleMap) {
 
         mMap = googleMap;
 
-        // Add a marker and move the camera to it
+        // Set default zoom marker
         Double x = Double.parseDouble(getString(R.string.theGreen_x));
         Double y = Double.parseDouble(getString(R.string.theGreen_y));
         LatLng hanover = new LatLng(x, y);
 
         Location l = null; // remains null if Location is disabled in the phone
         try {
+            //if the permissions are there, continue
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             l = mgr.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            mMap.moveCamera( CameraUpdateFactory.newLatLngZoom(new LatLng(l.getLatitude(), l.getLongitude()) , 16.0f) );
         }
         catch(SecurityException e){
             Log.d("PERM", "Security Exception getting last known location. Using Hanover.");
         }
 
+        //if phone location is enabled, set current location to the phone location
         if (l != null)  loc = new LatLng(l.getLatitude(), l.getLongitude());
         else loc = hanover;
-
         Log.d("Coords", loc.latitude + " " + loc.longitude);
 
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        mMap.addMarker(new MarkerOptions().position(hanover).title("Marker in Hanover"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(hanover));
-        mMap.moveCamera(CameraUpdateFactory.zoomTo(17f)); // buildings-level
+        mMap.addMarker(new MarkerOptions().position(loc).title("Current Location"));
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
+        mMap.moveCamera(CameraUpdateFactory.zoomTo(16f)); // buildings-level
 
+
+        /*
+        //currently does nothing...might not need at all in fact...
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
             @Override
             public void onMapClick(LatLng p0) {
+
 
                 Log.d("Map", p0.toString());
                 if (p0 != null) {
                     mMap.addMarker(new MarkerOptions().position(p0).title(p0.toString()));
                 }
+
             }
         });
-
+        */
     }
+
+    // Put the marker at given location and zoom into the location
+    private void updateWithNewLocation(Location location) {
+        if (location != null) {
+            LatLng l = fromLocationToLatLng(location);
+            loc = l;
+
+            /*
+            drawMarker(l, false);
+            moveToCurrentLocation(l);
+            */
+        }
+    }
+
+    //support method for above
+    public static LatLng fromLocationToLatLng(Location location){
+        return new LatLng(location.getLatitude(), location.getLongitude());
+    }
+
+    /*
+    // Remove old marker and place new marker.
+    private void drawMarker(LatLng l, boolean serverLoc){
+        if(serverLoc) {
+            if (server != null)
+                server.remove();
+            server = map.addMarker(new MarkerOptions().position(l).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        } else{
+            if (own != null)
+                own.remove();
+            own = map.addMarker(new MarkerOptions().position(l).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        }
+    }
+
+
+    private void moveToCurrentLocation(LatLng currentLocation)
+    {
+        LatLngBounds bounds = map.getProjection().getVisibleRegion().latLngBounds;
+        if(!bounds.contains(currentLocation) || zoomedOut ){
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLocation,15));
+            // Zoom in, animating the camera.
+            map.animateCamera(CameraUpdateFactory.zoomIn());
+            // Zoom out to zoom level 10, animating with a duration of 1 second.
+            map.animateCamera(CameraUpdateFactory.zoomTo(15), 1000, null);
+            zoomedOut = false;
+        }
+    }
+    */
+
+
+
+
+
+
+
+
+
+
+
+
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
