@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- created by Chris Moorad on 9/28/17-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:visibility="visible">
+
+    <android.support.v7.widget.AlertDialogLayout
+        android:id="@+id/passwordCheck"
+        android:layout_width="270dp"
+        android:layout_height="180dp"
+        android:background="@color/colorPrimary"
+        android:visibility="visible">
+
+        <TextView
+            android:id="@+id/passCheckText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:layout_gravity="center_horizontal"
+            android:textSize="15dp"
+            android:text="Verify password" />
+
+        <EditText
+            android:id="@+id/passCheckEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:hint="Re-type password" />
+
+        <Button
+            android:id="@+id/submitBtn"
+            android:layout_width="150dp"
+            android:layout_height="50dp"
+            android:layout_marginTop="20dp"
+            android:text="Submit"
+            android:layout_gravity="center_horizontal"/>
+    </android.support.v7.widget.AlertDialogLayout>
+
+</LinearLayout>
