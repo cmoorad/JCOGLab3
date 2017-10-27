@@ -13,9 +13,12 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.android.volley.Request;
@@ -88,7 +91,12 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
     public Game() {
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.M)
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.panel_frag, container, true);
+        return v;
+    }
+
+        @RequiresApi(api = Build.VERSION_CODES.M)
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
@@ -96,6 +104,9 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
         view = (LinearLayout) findViewById(R.id.gameview);
 
+        FragmentManager fm = getSupportFragmentManager();
+        PassCheck passCheck = new PassCheck();
+        passCheck.show(fm, "dialog_box");
 
         requestPermissions();
 
@@ -344,7 +355,7 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("THE ERROR", error.toString());
-                        postPetResults("Error" + error.toString());
+                        postPetResults("ERROR" + error.toString());
                     }
                 });
 
@@ -382,6 +393,17 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
                 }
                 else {
                     Log.d("GOT CATPET RESPONSE", res);
+
+                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(ctx);
+                    dlgAlert.setTitle("Congrats!");
+                    dlgAlert.setPositiveButton("OK", null);
+                    dlgAlert.setCancelable(true);
+                    dlgAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                    dlgAlert.setMessage("You pet the cat!");
+                    dlgAlert.create().show();
 
                     checkAllPetted();
 
