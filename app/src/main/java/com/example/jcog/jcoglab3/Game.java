@@ -41,6 +41,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.content.ContextCompat;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.location.LocationListener;
@@ -49,7 +50,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.DecimalFormat;
 
 /**
  * Created by Chris Moorad on 10/19/17.
@@ -62,6 +67,10 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
     public String pass1;
     public Bitmap image;
     public JSONArray pubcat;
+    public View view;
+    public String caturl;
+    public String currid;
+    public boolean allpetted = false;
 
     private GoogleMap mMap;
     private boolean permCheck = false;
@@ -84,6 +93,9 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.map_fragment);
+
+        view = (LinearLayout) findViewById(R.id.gameview);
+
 
         requestPermissions();
 
@@ -114,6 +126,7 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
         }
 
 
+        /*
         Button successbutton = findViewById(R.id.successButton);
         successbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -124,6 +137,7 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
                 startActivity(myIntent);
             }
         });
+        */
 
 
         getCats(mapFragment.getView());
@@ -275,6 +289,119 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
         });
     }
 
+
+    private void checkAllPetted() {
+
+        Boolean all = true;
+
+        try {
+
+            for (int i = 0; i < pubcat.length(); i++) {
+
+                JSONObject cat = pubcat.getJSONObject(i);
+                String pettedtf = cat.get("petted").toString();
+                Boolean petted = Boolean.valueOf(pettedtf);
+
+                if (!petted) {
+                    all = false;
+                }
+            }
+
+            if (all) {
+                allpetted = true;
+            }
+
+        }
+        catch (JSONException je) {
+                Log.d("Error", "JSON CREATION ERROR");
+            }
+
+
+    }
+
+    //Pet cat - request
+    public void petCat(View v){
+
+
+
+
+        req = buildPetHTML();
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                String url = "http://cs65.cs.dartmouth.edu/pat.pl?" + req;
+
+                Log.d("URL", url);
+                StringRequest req = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String res) {
+                        postPetResults(res);
+                    }
+                }, new Response.ErrorListener() {
+
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("THE ERROR", error.toString());
+                        postPetResults("Error" + error.toString());
+                    }
+                });
+
+
+                // Add the request to the RequestQueue.
+                queue.add(req);
+            }
+        }).start();
+
+    }
+
+    // builds string for retrieving cat list
+    private String buildPetHTML(){
+        String s = "name=" + user1 + "&password=" + pass1 + "&catid=" + currid + "&lat=" + loc.latitude + "&lng=" + loc.longitude;
+        return s;
+    }
+
+    //support methods for post - error caught or draw the cat markers
+    private void postPetResults(final String res){
+        dl.post(new Runnable() {
+            @Override
+            public void run() {
+                if(res.contains("ERROR")) {
+                    Log.d("RESPONSE", res);
+                    AlertDialog.Builder dlgAlert = new AlertDialog.Builder(ctx);
+                    dlgAlert.setTitle("Uh oh...");
+                    dlgAlert.setPositiveButton("OK", null);
+                    dlgAlert.setCancelable(true);
+                    dlgAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+                    dlgAlert.setMessage("Cat is too far to be petted!");
+                    dlgAlert.create().show();
+                }
+                else {
+                    Log.d("GOT CATPET RESPONSE", res);
+
+                    checkAllPetted();
+
+                    if (allpetted) {
+                        Intent myIntent = new Intent(Game.this, Success.class);
+                        myIntent.putExtra("user", user1);
+                        myIntent.putExtra("pass", pass1);
+                        startActivity(myIntent);
+                    }
+                }
+
+            }
+        });
+    }
+
+
+
+
+
+
     //draws the cat markers
     private void drawCats(String jsonString) {
 
@@ -302,13 +429,58 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                           @Override
                           public boolean onMarkerClick(Marker marker) {
-                              String namesky = marker.getTitle();
-                              Log.d("MARKER WAS CLICKED", namesky);
+                              String nameclick = marker.getTitle();
+                              Log.d("MARKER WAS CLICKED", nameclick);
 
+                              //set name in panel
+                              TextView name = view.findViewById(R.id.catname);
+                              name.setText(nameclick);
+
+                              //to calculate dist
+                              LatLng catloc = marker.getPosition();
+                              LatLng curr = loc;
+                              String distance = CalculationByDistance(catloc, curr);
+                              TextView dist = view.findViewById(R.id.catdist);
+                              dist.setText(distance);
+
+                              //iterate through json array to find correct json object
+                              for (int i = 0; i < pubcat.length(); i++) {
+                                  try {
+                                      JSONObject cat = pubcat.getJSONObject(i);
+
+                                      if (cat.get("name").toString().equals(marker.getTitle())) {
+
+                                          Log.d("CAT NAME", nameclick);
+                                          Log.d("CAT URL", cat.get("picUrl").toString());
+
+                                          //set current id
+                                          currid = cat.get("catId").toString();
+
+                                          //get catpic url
+                                          caturl = cat.get("picUrl").toString();
+
+                                          image = changeBitMap(caturl);
+
+                                          final Handler delay = new Handler();
+                                          delay.postDelayed(new Runnable() {
+                                              @Override
+                                              public void run() {
+                                                  ImageView icon = view.findViewById(R.id.catIcon);
+                                                  icon.setImageBitmap(image);
+                                              }
+                                          }, 300);
+
+
+
+                                      }
+                                  }
+                                  catch(JSONException je) {
+                                      Log.d("Error", "MARKER CLICK JSON ERROR SITUATION");
+                                  }
+                              }
                               return false;
                           }
                       });
-
             }
 
         } catch(JSONException je) {
@@ -317,75 +489,62 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
     }
 
-    /*
-    @Override
-    public boolean onMarkerClick(final Marker marker) {
-
-        if (marker.equals(myMarker))
-        {
-            //handle click here
-        }
-    }
-    */
-
-
-    //onClickListener for Cat markers
-    private void onMarkerListener(View view, Marker marker) {
-
-
-        /*
-        for (int i = 0; i < catlist.length(); i++) {
-
-            try {
-
-                //error being thrown here
-                JSONObject cat = catlist.getJSONObject(i);
-
-                if (cat.get("name").toString().equals(marker.getTitle())) {
-
-                    image = grabBitMap(cat.get("picUrl").toString());
-                    ImageView icon = view.findViewById(R.id.catIcon);
-                    icon.setImageBitmap(image);
-
-
-                    //to calculate dist, call method from google API using loc AND parsed values
-
-                    TextView name = view.findViewById(R.id.catname);
-                    TextView dist = view.findViewById(R.id.catdist);
-
-
-
-                }
-
-            }
-
-            catch(JSONException je) {
-                Log.d("Error", "JSON CREATION ERROR");
-            }
-
-
-
-        }
-        */
-
-
-    }
-
 
     //support method to get image from url
-    protected Bitmap grabBitMap(String url) {
-        Bitmap Icon = null;
-        try {
-            InputStream in = new java.net.URL(url).openStream();
-            Icon = BitmapFactory.decodeStream(in);
-        } catch (Exception e) {
-            Log.e("Error", e.getMessage());
-            e.printStackTrace();
-        }
+    protected Bitmap changeBitMap(String urlstring) {
+        //Bitmap Icon = null;
 
-        return Icon;
+        caturl = urlstring;
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL(caturl);
+                    image = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+                } catch(MalformedURLException e) {
+                    Log.d("MALFORMED URL", "DAMNIT");
+
+                } catch(IOException e) {
+                    Log.d("URL IO Exception", "YEP");
+                }
+            }
+        }).start();
+        return image;
     }
 
+    //distance support method
+    public String CalculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult;
+        double meter = valueResult*1000;
+
+        Log.d("METER VALUE", String.valueOf(meter));
+
+        if (km <= .1) {
+            String meterstring = String.valueOf(meter);
+            String actualmeters = meterstring.substring(0,2) + " meters";
+            return actualmeters;
+        }
+        else {
+            String kmstring = String.valueOf(km);
+            String actualkm = kmstring.substring(0,3) + " kilometeres";
+            return actualkm;
+        }
+
+    }
 
     @Override
     public void onStatusChanged(String s, int i, Bundle bundle) {
