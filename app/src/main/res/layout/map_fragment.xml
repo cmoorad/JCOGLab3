@@ -12,14 +12,56 @@
         class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         tools:context="com.example.jcog.jcoglab3.Game"
-        android:layout_height="550dp" />
+        android:layout_height="525dp" />
 
-    <Button
-        android:id="@+id/successButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="30dp"
-        android:text="Success button" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="135dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/catIcon"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_marginLeft="25dp"
+            android:layout_gravity="center"/>
+
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
+            android:layout_gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/catname"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:text="Name" />
+
+            <TextView
+                android:id="@+id/catdist"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="Distance" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/successButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="55dp"
+            android:layout_gravity="center"
+            android:text="Pat" />
+
+
+    </LinearLayout>
+
+
 
 </LinearLayout>
