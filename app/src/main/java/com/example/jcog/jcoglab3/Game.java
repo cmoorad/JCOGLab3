@@ -61,6 +61,7 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
     public String user1;
     public String pass1;
     public Bitmap image;
+    public JSONArray pubcat;
 
     private GoogleMap mMap;
     private boolean permCheck = false;
@@ -68,6 +69,7 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
     private LatLng loc;
     private SupportMapFragment mapFragment;
     private static final int MY_PERMISSIONS_REQUEST = 301;
+    private Marker current;
 
     private String req;
     private Handler dl;
@@ -136,6 +138,12 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
         loc = new LatLng(location.getLatitude(), location.getLongitude());
 
+        current.remove();
+
+        current = mMap.addMarker(new MarkerOptions().position(loc).title("Current Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+
+
+
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(newPoint));
         //mMap.moveCamera(CameraUpdateFactory.zoomTo(16f));
 
@@ -175,44 +183,13 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
         Log.d("Coords", loc.latitude + " " + loc.longitude);
 
         mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
-        mMap.addMarker(new MarkerOptions().position(loc).title("Current Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        current = mMap.addMarker(new MarkerOptions().position(loc).title("Current Location").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(loc));
         mMap.moveCamera(CameraUpdateFactory.zoomTo(16f)); // buildings-level
 
 
+        //inflate starting panel view
 
-        //getCats(mapFragment.this);
-
-
-
-        /*
-        //currently does nothing...might not need at all in fact...
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng p0) {
-
-
-                Log.d("Map", p0.toString());
-                if (p0 != null) {
-                    mMap.addMarker(new MarkerOptions().position(p0).title(p0.toString()));
-                }
-
-            }
-        });
-        */
-    }
-
-    // Put the marker at given location and zoom into the location
-    private void updateWithNewLocation(Location location) {
-        if (location != null) {
-            LatLng l = fromLocationToLatLng(location);
-            loc = l;
-
-            /*
-            drawMarker(l, false);
-            moveToCurrentLocation(l);
-            */
-        }
     }
 
     //support method for above
@@ -305,6 +282,8 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
 
         try {
             JSONArray catlist = new JSONArray(jsonString);
+            pubcat = catlist;
+
             Log.d("CATLISTARRAY", catlist.toString());
 
             for (int i = 0; i < catlist.length(); i++) {
@@ -317,20 +296,19 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
                 Double catLng = Double.parseDouble(cat.get("lng").toString());
                 LatLng pos = new LatLng(catLat, catLng);
 
-                mMap.addMarker(new MarkerOptions().position(pos).title(name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+                Marker newmarker = mMap.addMarker(new MarkerOptions().position(pos).title(name).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
 
-                /*
+
                 mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
                           @Override
                           public boolean onMarkerClick(Marker marker) {
                               String namesky = marker.getTitle();
                               Log.d("MARKER WAS CLICKED", namesky);
 
-                              //onMarkerListener(getCurrentFocus(), marker);
                               return false;
                           }
                       });
-                      */
+
             }
 
         } catch(JSONException je) {
@@ -338,6 +316,17 @@ public class Game extends AppCompatActivity implements OnMapReadyCallback, Locat
         }
 
     }
+
+    /*
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+
+        if (marker.equals(myMarker))
+        {
+            //handle click here
+        }
+    }
+    */
 
 
     //onClickListener for Cat markers
