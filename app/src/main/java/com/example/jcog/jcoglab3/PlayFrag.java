@@ -25,6 +25,7 @@ public class PlayFrag extends Fragment {
 
         TextView usernametext = v.findViewById(R.id.hiuser);
         final String userholder = ((MainActivity)getActivity()).user1;
+        final String passholder = ((MainActivity)getActivity()).pass1;
 
         Button playbutton = v.findViewById(R.id.playButton);
         playbutton.setOnClickListener(new View.OnClickListener() {
@@ -32,6 +33,7 @@ public class PlayFrag extends Fragment {
             public void onClick(View view) {
                 Intent myIntent = new Intent(getActivity(), Game.class);
                 myIntent.putExtra("user", userholder);
+                myIntent.putExtra("pass", passholder);
                 startActivity(myIntent);
 
 

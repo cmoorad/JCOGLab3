@@ -43,8 +43,10 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
 
     public String user1;
+    public String pass1;
     private static final int MY_PERMISSIONS_REQUEST = 301;
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -55,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
         Intent i = getIntent();
         user1 =  i.getStringExtra("user");
+        pass1 = i.getStringExtra("pass");
+
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -15,6 +15,7 @@ import android.widget.Button;
 public class Success extends AppCompatActivity {
 
     public String user1;
+    public String pass1;
 
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -23,6 +24,7 @@ public class Success extends AppCompatActivity {
 
         Intent i = getIntent();
         user1 =  i.getStringExtra("user");
+        pass1 = i.getStringExtra("pass");
 
         Button keepplaying = findViewById(R.id.keepPlaying);
         keepplaying.setOnClickListener(new View.OnClickListener() {
@@ -30,6 +32,7 @@ public class Success extends AppCompatActivity {
             public void onClick(View view) {
                 Intent myIntent = new Intent(Success.this, Game.class);
                 myIntent.putExtra("user", user1);
+                myIntent.putExtra("pass", pass1);
                 startActivity(myIntent);
             }
         });
@@ -40,6 +43,7 @@ public class Success extends AppCompatActivity {
             public void onClick(View view) {
                 Intent myIntent = new Intent(Success.this, MainActivity.class);
                 myIntent.putExtra("user", user1);
+                myIntent.putExtra("pass", pass1);
                 startActivity(myIntent);
             }
         });

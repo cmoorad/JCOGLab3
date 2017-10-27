@@ -142,7 +142,7 @@ public class NewAccount extends AppCompatActivity {
                 EditText user = findViewById(R.id.editusername);
                 final String username = user.getText().toString();
                 EditText pass = findViewById(R.id.editpassword);
-                String password = pass.getText().toString();
+                final String password = pass.getText().toString();
 
                 //code for error box
                 AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(ctx);
@@ -187,6 +187,7 @@ public class NewAccount extends AppCompatActivity {
                                 Intent myIntent = new Intent(NewAccount.this,
                                         MainActivity.class);
                                 myIntent.putExtra("user", username);
+                                myIntent.putExtra("pass", password);
                                 startActivity(myIntent);
                             }
                         }

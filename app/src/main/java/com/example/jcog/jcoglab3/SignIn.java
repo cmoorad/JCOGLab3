@@ -97,7 +97,7 @@ public class SignIn extends AppCompatActivity {
                 EditText user = findViewById(R.id.editUser);
                 final String username = user.getText().toString();
                 EditText pass = findViewById(R.id.editPass);
-                String password = user.getText().toString();
+                final String password = pass.getText().toString();
 
                 //call the get to verify sign in
                 doGet(view);
@@ -112,6 +112,7 @@ public class SignIn extends AppCompatActivity {
                         if (!errorSignIn) {
                             Intent myIntent = new Intent(SignIn.this, MainActivity.class);
                             myIntent.putExtra("user", username);
+                            myIntent.putExtra("pass", password);
                             startActivity(myIntent);
                         }
                     }
